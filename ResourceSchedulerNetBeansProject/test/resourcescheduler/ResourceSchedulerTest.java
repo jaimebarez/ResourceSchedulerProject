@@ -62,6 +62,7 @@ public class ResourceSchedulerTest {
     @Test
     public void testCanReceiveAndQueueMessages() {
         System.out.println("canReceiveAndQueueMessages");
+
         int queuedMessagesCount;
         resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
         queuedMessagesCount = resourceScheduler.getQueuedMessagesCount();
@@ -71,11 +72,37 @@ public class ResourceSchedulerTest {
         queuedMessagesCount = resourceScheduler.getQueuedMessagesCount();
         assertEquals(2, queuedMessagesCount);
 
-        int numberOfNewDummyMessagesToSend = 8;
+        final int numberOfNewDummyMessagesToSend = 8;
         for (int i = 0; i < numberOfNewDummyMessagesToSend; i++) {
             resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
             queuedMessagesCount++;
             assertEquals(queuedMessagesCount, resourceScheduler.getQueuedMessagesCount());
         }
+    }
+
+    @Test
+    public void testCanSendMessagesWhenResourcesAvailable() {
+        System.out.println("canSendMessagesWhenResourcesAvailable");
+
+        for (int i = 0; i < 10; i++) {
+            resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+
+        }
+        assertEquals(10, resourceScheduler.getQueuedMessagesCount());
+
+        resourceScheduler.setResourcesQuantity(1);
+        assertEquals(9, resourceScheduler.getQueuedMessagesCount());
+
+        resourceScheduler.setResourcesQuantity(3);/*We get two more resources*/
+        assertEquals(7, resourceScheduler.getQueuedMessagesCount());
+
+        resourceScheduler.setResourcesQuantity(1);/*No more resources added, so same quantity of queuede msgs*/
+        assertEquals(7, resourceScheduler.getQueuedMessagesCount());
+        
+        resourceScheduler.setResourcesQuantity(6);/*5 new resources*/
+        assertEquals(2, resourceScheduler.getQueuedMessagesCount());
+        
+        resourceScheduler.setResourcesQuantity(2);
+        assertEquals(0, resourceScheduler.getQueuedMessagesCount());
     }
 }
