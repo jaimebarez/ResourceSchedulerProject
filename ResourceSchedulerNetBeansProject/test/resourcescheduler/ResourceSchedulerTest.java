@@ -1,5 +1,6 @@
 package resourcescheduler;
 
+import junit.framework.Assert;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -13,6 +14,7 @@ import static org.junit.Assert.*;
  */
 public class ResourceSchedulerTest {
     
+    private ResourceScheduler resourceScheduler;
     
     @BeforeClass
     public static void setUpClass() {
@@ -24,6 +26,7 @@ public class ResourceSchedulerTest {
     
     @Before
     public void setUp() {
+        this.resourceScheduler = new ResourceScheduler();
     }
     
     @After
@@ -31,6 +34,12 @@ public class ResourceSchedulerTest {
     }
 
     
-   
+    @Test
+    public void testCanConfigureResourcesQuantity() {
+        int exampleResourcesNumber = 2;
+        resourceScheduler.setResourcesQuantity(exampleResourcesNumber);
+        
+        Assert.assertEquals(exampleResourcesNumber, resourceScheduler.getResourcesQuantity());
+    }
     
 }
