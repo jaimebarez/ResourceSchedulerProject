@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import resourcescheduler.model.gateway.DummyGatewayFactory;
 import resourcescheduler.model.message.MessageFactory;
 import resourcescheduler.utils.GeneralUtilities;
 
@@ -16,7 +17,7 @@ import resourcescheduler.utils.GeneralUtilities;
  */
 public class ResourceSchedulerTest {
 
-    private ResourceScheduler resourceScheduler;
+    private ResourceScheduler dummyResourceScheduler;
 
     @BeforeClass
     public static void setUpClass() {
@@ -28,7 +29,7 @@ public class ResourceSchedulerTest {
 
     @Before
     public void setUp() {
-        this.resourceScheduler = new ResourceScheduler();
+        this.dummyResourceScheduler = new ResourceScheduler(new DummyGatewayFactory());
     }
 
     @After
@@ -39,23 +40,23 @@ public class ResourceSchedulerTest {
     public void testCanConfigureResourcesQuantity() {
         System.out.println("canConfigureResourcesQuantity");
 
-        assertEquals(0, resourceScheduler.getResourcesQuantity());
+        assertEquals(0, dummyResourceScheduler.getResourcesQuantity());
 
         int exampleResourcesNumber = 2;
 
-        resourceScheduler.setResourcesQuantity(exampleResourcesNumber);
-        assertEquals(exampleResourcesNumber, resourceScheduler.getResourcesQuantity());
+        dummyResourceScheduler.setResourcesQuantity(exampleResourcesNumber);
+        assertEquals(exampleResourcesNumber, dummyResourceScheduler.getResourcesQuantity());
 
         exampleResourcesNumber = 3;
-        resourceScheduler.setResourcesQuantity(exampleResourcesNumber);
-        assertEquals(exampleResourcesNumber, resourceScheduler.getResourcesQuantity());
+        dummyResourceScheduler.setResourcesQuantity(exampleResourcesNumber);
+        assertEquals(exampleResourcesNumber, dummyResourceScheduler.getResourcesQuantity());
 
         /*Random numbers test*/
         int[] exampleResourcesNumbers = new int[10];
         for (int i = 0; i < exampleResourcesNumbers.length; i++) {
             exampleResourcesNumber = GeneralUtilities.generateRandomNumber(0, Integer.MAX_VALUE);
-            resourceScheduler.setResourcesQuantity(exampleResourcesNumber);
-            assertEquals(exampleResourcesNumber, resourceScheduler.getResourcesQuantity());
+            dummyResourceScheduler.setResourcesQuantity(exampleResourcesNumber);
+            assertEquals(exampleResourcesNumber, dummyResourceScheduler.getResourcesQuantity());
         }
     }
 
@@ -64,19 +65,19 @@ public class ResourceSchedulerTest {
         System.out.println("canReceiveAndQueueMessages");
 
         int queuedMessagesCount;
-        resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
-        queuedMessagesCount = resourceScheduler.getQueuedMessagesCount();
+        dummyResourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+        queuedMessagesCount = dummyResourceScheduler.getQueuedMessagesCount();
         assertEquals(1, queuedMessagesCount);
 
-        resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
-        queuedMessagesCount = resourceScheduler.getQueuedMessagesCount();
+        dummyResourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+        queuedMessagesCount = dummyResourceScheduler.getQueuedMessagesCount();
         assertEquals(2, queuedMessagesCount);
 
         final int numberOfNewDummyMessagesToSend = 8;
         for (int i = 0; i < numberOfNewDummyMessagesToSend; i++) {
-            resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+            dummyResourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
             queuedMessagesCount++;
-            assertEquals(queuedMessagesCount, resourceScheduler.getQueuedMessagesCount());
+            assertEquals(queuedMessagesCount, dummyResourceScheduler.getQueuedMessagesCount());
         }
     }
 
@@ -85,24 +86,43 @@ public class ResourceSchedulerTest {
         System.out.println("canSendMessagesWhenResourcesAvailable");
 
         for (int i = 0; i < 10; i++) {
-            resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+            dummyResourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+        }
+        
+        assertEquals(10, dummyResourceScheduler.getQueuedMessagesCount());
+
+        dummyResourceScheduler.setResourcesQuantity(1);
+        assertEquals(9, dummyResourceScheduler.getQueuedMessagesCount());
+
+        dummyResourceScheduler.setResourcesQuantity(3);/*We get two more resources*/
+        assertEquals(7, dummyResourceScheduler.getQueuedMessagesCount());
+
+        dummyResourceScheduler.setResourcesQuantity(1);/*No more resources added, so same quantity of queuede msgs*/
+        assertEquals(7, dummyResourceScheduler.getQueuedMessagesCount());
+
+        dummyResourceScheduler.setResourcesQuantity(6);/*5 new resources*/
+        assertEquals(2, dummyResourceScheduler.getQueuedMessagesCount());
+
+        dummyResourceScheduler.setResourcesQuantity(2);
+        assertEquals(0, dummyResourceScheduler.getQueuedMessagesCount());
+
+        dummyResourceScheduler.setResourcesQuantity(0);
+        assertEquals(0, dummyResourceScheduler.getQueuedMessagesCount());
+
+        dummyResourceScheduler.setResourcesQuantity(3);/*3 resources free*/
+
+        for (int i = 0; i < 3; i++) {
+            dummyResourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+            assertEquals(0, dummyResourceScheduler.getQueuedMessagesCount());
 
         }
-        assertEquals(10, resourceScheduler.getQueuedMessagesCount());
 
-        resourceScheduler.setResourcesQuantity(1);
-        assertEquals(9, resourceScheduler.getQueuedMessagesCount());
-
-        resourceScheduler.setResourcesQuantity(3);/*We get two more resources*/
-        assertEquals(7, resourceScheduler.getQueuedMessagesCount());
-
-        resourceScheduler.setResourcesQuantity(1);/*No more resources added, so same quantity of queuede msgs*/
-        assertEquals(7, resourceScheduler.getQueuedMessagesCount());
+        dummyResourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+        assertEquals(1, dummyResourceScheduler.getQueuedMessagesCount());/*1 msg queued*/
         
-        resourceScheduler.setResourcesQuantity(6);/*5 new resources*/
-        assertEquals(2, resourceScheduler.getQueuedMessagesCount());
-        
-        resourceScheduler.setResourcesQuantity(2);
-        assertEquals(0, resourceScheduler.getQueuedMessagesCount());
+        dummyResourceScheduler.setResourcesQuantity(30000);
+        dummyResourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+        assertEquals(0, dummyResourceScheduler.getQueuedMessagesCount());/*1 msg queued*/
+
     }
 }
