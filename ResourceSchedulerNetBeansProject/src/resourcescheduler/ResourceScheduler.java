@@ -9,7 +9,7 @@ public class ResourceScheduler {
     private int resourcesQuantity;
 
     public ResourceScheduler() {
-        this.resourcesQuantity = 2;
+        this.resourcesQuantity = 0;
     }
 
     public int getResourcesQuantity() {
@@ -17,7 +17,7 @@ public class ResourceScheduler {
     }
 
     public void setResourcesQuantity(int resourcesQuantity) {
-        
+        this.resourcesQuantity = resourcesQuantity;
     }
 
 }

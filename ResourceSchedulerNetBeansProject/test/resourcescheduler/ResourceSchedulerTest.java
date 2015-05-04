@@ -38,7 +38,6 @@ public class ResourceSchedulerTest {
     public void testCanConfigureResourcesQuantity() {
         int exampleResourcesNumber = 2;
         resourceScheduler.setResourcesQuantity(exampleResourcesNumber);
-        
         Assert.assertEquals(exampleResourcesNumber, resourceScheduler.getResourcesQuantity());
     }
     
