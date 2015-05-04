@@ -58,7 +58,7 @@ public class ResourceSchedulerTest {
     }
 
     @Test
-    public void testCanReceiveMessages() {
+    public void testCanReceiveAndQueueMessages() {
 
         int queuedMessagesCount;
         resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
