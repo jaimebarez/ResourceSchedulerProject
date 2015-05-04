@@ -2,7 +2,7 @@ package resourcescheduler;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import resourcescheduler.model.Message;
+import resourcescheduler.model.message.Message;
 
 /**
  *

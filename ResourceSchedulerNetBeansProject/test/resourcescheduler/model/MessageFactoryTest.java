@@ -1,5 +1,7 @@
 package resourcescheduler.model;
 
+import resourcescheduler.model.message.MessageFactory;
+import resourcescheduler.model.message.Message;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

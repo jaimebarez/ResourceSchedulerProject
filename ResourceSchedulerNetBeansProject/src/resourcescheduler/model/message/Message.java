@@ -1,4 +1,4 @@
-package resourcescheduler.model;
+package resourcescheduler.model.message;
 
 /**
  *
