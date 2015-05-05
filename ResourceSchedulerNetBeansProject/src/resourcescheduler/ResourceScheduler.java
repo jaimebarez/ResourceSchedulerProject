@@ -1,10 +1,12 @@
 package resourcescheduler;
 
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
+import javafx.beans.binding.IntegerExpression;
+import static javafx.beans.binding.IntegerExpression.integerExpression;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import resourcescheduler.model.gateway.Gateway;
-import resourcescheduler.model.gateway.GatewayAbstractFactory;
 import resourcescheduler.model.message.Message;
 
 /**
@@ -12,55 +14,56 @@ import resourcescheduler.model.message.Message;
  * @author Jaime Bárez Lobato
  */
 public class ResourceScheduler {
-    
-    private int resourcesQuantity;
-    private final Queue<Message> unsentMessageQueue;
-    private final Queue<Gateway> unusedResources;
-    private final GatewayAbstractFactory gatewayFactory;
-    
-    public ResourceScheduler(GatewayAbstractFactory gatewayFactory) {
-        this.gatewayFactory = gatewayFactory;
-        
-        this.resourcesQuantity = 0;
-        this.unsentMessageQueue = new LinkedList<>();
-        this.unusedResources = new LinkedList<>();
+
+    private final IntegerProperty idleResources;
+    private final IntegerProperty busyResources;
+    private final IntegerExpression totalRealResources;
+    private final IntegerProperty desiredResources;
+    private final IntegerExpression availableResources;
+
+    private final Queue<Message> unsentMessagesQueue;
+
+    private final Gateway gateway;
+
+    public ResourceScheduler(Gateway gateway) {
+        this.gateway = gateway;
+
+        this.idleResources = new SimpleIntegerProperty(0);
+        this.busyResources = new SimpleIntegerProperty(0);
+        this.desiredResources = new SimpleIntegerProperty(0);
+
+        this.totalRealResources = integerExpression(idleResources.add(busyResources));
+        this.availableResources = integerExpression(desiredResources.subtract(totalRealResources));
+
+        this.unsentMessagesQueue = new LinkedBlockingQueue<>();
     }
-    
-    public int getResourcesQuantity() {
-        return resourcesQuantity;
+
+    /**
+     *
+     * @return The number of available resources. Negative number if we set less
+     * resources quantity than the number of the current busy resources
+     */
+    public int getAvailableResourcesQuantity() {
+        return availableResources.intValue();
     }
-    
-    public void setResourcesQuantity(int newResourcesQuantity) {
-        final int oldResourcesQuantity = this.resourcesQuantity;
-        this.resourcesQuantity = newResourcesQuantity;
-        
-        final int numberOfNewResources = Math.max(0, newResourcesQuantity - oldResourcesQuantity);
-        
-        for (int i = 0; i < numberOfNewResources; i++) {
-            unusedResources.offer(gatewayFactory.createGateway());
+
+    public int getDesiredResourcesQuantity() {
+        return this.desiredResources.intValue();
+    }
+
+    public void setDesiredResourcesQuantity(int quantity) {
+        if(quantity<0){
+            throw new IllegalArgumentException("Desired resources quantity must not be <0");
         }
-        
-        Iterator<Message> unsentMsgsIt = unsentMessageQueue.iterator();
-        Iterator<Gateway> unusedResourcesIt = unusedResources.iterator();
-        
-        int numResourcesCouldProcess = numberOfNewResources;
-        
-        while (numResourcesCouldProcess >= 0 && unsentMsgsIt.hasNext() && unusedResourcesIt.hasNext()) {
-            Message nextMessageToSend = unsentMsgsIt.next();
-            Gateway nextNewGateway = unusedResourcesIt.next();
-            nextNewGateway.send(nextMessageToSend);
-            unusedResourcesIt.remove();
-            numResourcesCouldProcess--;
-        }
-        
+        this.desiredResources.set(quantity);
     }
-    
+
     public void reveiveMessage(Message message) {
-        this.unsentMessageQueue.offer(message);
+        this.unsentMessagesQueue.offer(message);
     }
-    
+
     public int getQueuedMessagesCount() {
-        return this.unsentMessageQueue.size();
+        return this.unsentMessagesQueue.size();
     }
-    
+
 }
