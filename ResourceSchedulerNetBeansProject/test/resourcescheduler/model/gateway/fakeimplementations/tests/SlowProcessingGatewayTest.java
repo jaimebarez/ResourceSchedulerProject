@@ -1,5 +1,7 @@
 package resourcescheduler.model.gateway.fakeimplementations.tests;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import resourcescheduler.model.gateway.fakeimplementations.SlowProcessingGateway;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
@@ -35,6 +37,18 @@ public class SlowProcessingGatewayTest {
             final SlowProcessingGateway slowProcessingGateway
                     = new SlowProcessingGateway(gatewayProcessingTime);
 
+            /*Explanation for that below... (#1)*/
+            slowProcessingGateway.setInternalThreadFactory(new ThreadFactory() {
+                final ThreadFactory tf = Executors.defaultThreadFactory();
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread newThread = tf.newThread(r);
+                    newThread.setPriority(Thread.MAX_PRIORITY);
+                    return newThread;
+                }
+            });
+
             slowProcessingGateway.send(new Message() {
 
                 @Override
@@ -50,7 +64,7 @@ public class SlowProcessingGatewayTest {
             });
 
             synchronized (testThread) {
-                /*Not exact time, depends on JVM and OS states*/
+                /*(#1) We want fast threads to pass the test.Not exact time, depends on JVM and OS states*/
                 testThread.wait((int) (msToProcessMessage * 1.5f));
                 final float millisTook = millisAfterSending.get() - milliBeforeSending.get();
                 System.out.println("millisTook = " + millisTook);
