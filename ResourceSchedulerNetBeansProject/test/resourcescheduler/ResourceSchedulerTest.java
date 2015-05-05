@@ -1,16 +1,22 @@
-    package resourcescheduler;
+package resourcescheduler;
 
-import junit.framework.Assert;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import resourcescheduler.model.gateway.CompleteMsgNotifyingGateway;
 import resourcescheduler.model.gateway.fakeimplementations.DummyGateway;
 import resourcescheduler.model.gateway.Gateway;
+import resourcescheduler.model.gateway.fakeimplementations.InstantProcessingGateway;
+import resourcescheduler.model.gateway.fakeimplementations.ManualGateway;
+import resourcescheduler.model.message.Message;
 import resourcescheduler.model.message.MessageFactory;
-import resourcescheduler.utils.GeneralUtilities;
 import static resourcescheduler.utils.GeneralUtilities.generateRandomNumber;
 
 /**
@@ -19,13 +25,13 @@ import static resourcescheduler.utils.GeneralUtilities.generateRandomNumber;
  */
 public class ResourceSchedulerTest {
 
-    private static Gateway dummyGateway;
+    private static CompleteMsgNotifyingGateway dummyGateway;
 
     private ResourceScheduler dummyResourceScheduler;
 
     @BeforeClass
     public static void setUpClass() {
-        dummyGateway = new DummyGateway().createGateway();
+        dummyGateway = new DummyGateway();
     }
 
     @AfterClass
@@ -44,26 +50,34 @@ public class ResourceSchedulerTest {
     @Test
     public void testCanConfigureDesiredResourcesQuantity() {
         System.out.println("testCanConfigureDesiredResourcesQuantity");
-
+        //0 is default value
         assertEquals(0, dummyResourceScheduler.getDesiredResourcesQuantity());
 
-        int exampleResourcesNumber = 2;
-
-        dummyResourceScheduler.setDesiredResourcesQuantity(exampleResourcesNumber);
-        assertEquals(exampleResourcesNumber, dummyResourceScheduler.getDesiredResourcesQuantity());
-
-        exampleResourcesNumber = 3;
-        dummyResourceScheduler.setDesiredResourcesQuantity(exampleResourcesNumber);
-        assertEquals(exampleResourcesNumber, dummyResourceScheduler.getDesiredResourcesQuantity());
-
-        /*Random numbers test*/
-        int[] exampleResourcesNumbers = new int[10];
-        for (int i = 0; i < exampleResourcesNumbers.length; i++) {
-            
-            exampleResourcesNumber = generateRandomNumber(0, Integer.MAX_VALUE);
-            
+        //It can work with many numbers
+        final int[] exampleResourcesNumbers = new int[]{1, 2, 10, 5, 0, 100, 0};
+        for (int exampleResourcesNumber : exampleResourcesNumbers) {
             dummyResourceScheduler.setDesiredResourcesQuantity(exampleResourcesNumber);
             assertEquals(exampleResourcesNumber, dummyResourceScheduler.getDesiredResourcesQuantity());
+        }
+
+        //Random numbers test
+        int[] exampleRandomResourcesNumbers = new int[10];
+        for (int i = 0; i < exampleRandomResourcesNumbers.length; i++) {
+
+            int randomNumber = generateRandomNumber(0, Integer.MAX_VALUE);
+            dummyResourceScheduler.setDesiredResourcesQuantity(randomNumber);
+            assertEquals(randomNumber, dummyResourceScheduler.getDesiredResourcesQuantity());
+        }
+
+        //Negative numbers test
+        int workingNumber = 350;
+        dummyResourceScheduler.setDesiredResourcesQuantity(workingNumber);
+        assertEquals(workingNumber, dummyResourceScheduler.getDesiredResourcesQuantity());
+        try {
+            dummyResourceScheduler.setDesiredResourcesQuantity(-1);
+            fail("Negative numbers are not allowed");
+        } catch (IllegalArgumentException ex) {
+            assertEquals(workingNumber, dummyResourceScheduler.getDesiredResourcesQuantity());
         }
     }
 
@@ -89,50 +103,102 @@ public class ResourceSchedulerTest {
     }
 
     @Test
-    public void testCanSendMessagesWhenResourcesAvailable() {
-        System.out.println("canSendMessagesWhenResourcesAvailable");
+    public void testCanSendMessagesWhenProvidingAvailableResources() {
+        System.out.println("testCanSendMessagesWhenProvidingAvailableResources");
+
+        final AtomicInteger sentMessages = new AtomicInteger(0);
+        CompleteMsgNotifyingGateway gateway = new CompleteMsgNotifyingGateway() {
+
+            @Override
+            public void send(Message msg) {
+                sentMessages.incrementAndGet();
+            }
+        };
+        ResourceScheduler resourceScheduler = new ResourceScheduler(gateway);
 
         for (int i = 0; i < 10; i++) {
-            dummyResourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+
+            resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
         }
 
-        assertEquals(10, dummyResourceScheduler.getQueuedMessagesCount());
+        //Zero sent messages
+        assertEquals(0, sentMessages.get());
+        //One resource, one sent
+        resourceScheduler.setDesiredResourcesQuantity(1);
+        assertEquals(1, sentMessages.get());
+        //+2 resources, +2 sent
+        resourceScheduler.setDesiredResourcesQuantity(3);
+        assertEquals(3, sentMessages.get());
 
-        dummyResourceScheduler.setDesiredResourcesQuantity(1);
-        assertEquals(9, dummyResourceScheduler.getQueuedMessagesCount());
+        //Less resources, no message sent
+        resourceScheduler.setDesiredResourcesQuantity(1);
+        assertEquals(3, sentMessages.get());
 
-        dummyResourceScheduler.setDesiredResourcesQuantity(3);/*We get two more resources*/
+        /*We set one more resource, but messages are still processing, 
+         so the same number of messages sent*/
+        resourceScheduler.setDesiredResourcesQuantity(2);
+        assertEquals(3, sentMessages.get());
 
-        assertEquals(7, dummyResourceScheduler.getQueuedMessagesCount());
+        //The same
+        resourceScheduler.setDesiredResourcesQuantity(7);
+        assertEquals(7, sentMessages.get());
 
-        dummyResourceScheduler.setDesiredResourcesQuantity(1);/*No more resources added, so same quantity of queuede msgs*/
+        /*Plenty resources, but we can only send 10 messages*/
+        resourceScheduler.setDesiredResourcesQuantity(99999);
+        assertEquals(10, sentMessages.get());
 
-        assertEquals(7, dummyResourceScheduler.getQueuedMessagesCount());
+        resourceScheduler.setDesiredResourcesQuantity(0);
+        assertEquals(10, sentMessages.get());
 
-        dummyResourceScheduler.setDesiredResourcesQuantity(6);/*5 new resources*/
+        //We have 12 resources, so we can send new Messages until no more resources left
+        resourceScheduler.setDesiredResourcesQuantity(12);
+        assertEquals(10, sentMessages.get());
 
-        assertEquals(2, dummyResourceScheduler.getQueuedMessagesCount());
+        resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+        assertEquals(11, sentMessages.get());
+        resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+        assertEquals(12, sentMessages.get());
+        //No more resources
+        resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+        assertEquals(12, sentMessages.get());
+    }
 
-        dummyResourceScheduler.setDesiredResourcesQuantity(2);
-        assertEquals(0, dummyResourceScheduler.getQueuedMessagesCount());
+    @Test
+    public void testCanSendMessagesWhenResourcesBecomeAvailable() {
 
-        dummyResourceScheduler.setDesiredResourcesQuantity(0);
-        assertEquals(0, dummyResourceScheduler.getQueuedMessagesCount());
+        final AtomicInteger sentMessages = new AtomicInteger(0);
+        ManualGateway manualGateway = new ManualGateway() {
+            int i = 0;
 
-        dummyResourceScheduler.setDesiredResourcesQuantity(3);/*3 resources free*/
+            @Override
+            public void send(Message msg) {
+                super.send(msg);
+                System.out.println(i++);
+                sentMessages.incrementAndGet();
+            }
+        };
 
-        for (int i = 0; i < 3; i++) {
-            dummyResourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
-            assertEquals(0, dummyResourceScheduler.getQueuedMessagesCount());
+        ResourceScheduler resourceScheduler = new ResourceScheduler(manualGateway);
+        resourceScheduler.setDesiredResourcesQuantity(10);
 
+        final List<Message> processingMessages = new LinkedList<>();
+        for (int i = 0; i < 15; i++) {
+            Message dummyMessage = MessageFactory.createDummyMessage();
+            resourceScheduler.reveiveMessage(dummyMessage);
+            if (i < 10) {
+                processingMessages.add(dummyMessage);
+            }
         }
-
-        dummyResourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
-        assertEquals(1, dummyResourceScheduler.getQueuedMessagesCount());/*1 msg queued*/
-
-        dummyResourceScheduler.setDesiredResourcesQuantity(30000);
-        dummyResourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
-        assertEquals(0, dummyResourceScheduler.getQueuedMessagesCount());/*1 msg queued*/
+        //5 last messages queued
+        assertEquals(10, sentMessages.get());
+        assertEquals(5, resourceScheduler.getQueuedMessagesCount());
+        Message remove = processingMessages.remove(0);
+        
+        System.out.println("--------------");
+        assertTrue(manualGateway.processSentMessage(remove));
+        System.out.println("--------------");
+        assertEquals(4, resourceScheduler.getQueuedMessagesCount());
+        System.out.println("aaaaaaaaaaaaaaaaaa");
 
     }
 }

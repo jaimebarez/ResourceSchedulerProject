@@ -11,7 +11,7 @@ public class MessageFactory {
 
             @Override
             public void completed() {
-                System.out.println("");
+                System.out.println("Completed");
             }
         };
     }

@@ -2,13 +2,14 @@ package resourcescheduler.model.gateway.fakeimplementations;
 
 import java.util.HashSet;
 import java.util.Set;
+import resourcescheduler.model.gateway.CompleteMsgNotifyingGateway;
 import resourcescheduler.model.message.Message;
 
 /**
  *
  * @author Jaime Bárez Lobato
  */
-public class ManualGateway extends DummyGateway {
+public class ManualGateway extends CompleteMsgNotifyingGateway {
 
     private final Set<Message> messages;
 
@@ -17,8 +18,8 @@ public class ManualGateway extends DummyGateway {
     }
 
     @Override
-    public final void send(Message msg) {
-        super.send(msg);
+    public void send(Message msg) {
+
         addMessage(msg);
     }
 
@@ -36,6 +37,7 @@ public class ManualGateway extends DummyGateway {
         final boolean removed = this.messages.remove(msg);
         if (removed) {
             msg.completed();
+            super.fireMessageCompleted(msg);
         }
         return removed;
     }

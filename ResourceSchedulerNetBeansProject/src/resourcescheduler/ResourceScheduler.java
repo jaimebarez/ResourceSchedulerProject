@@ -1,12 +1,20 @@
 package resourcescheduler;
 
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.binding.IntegerExpression;
 import static javafx.beans.binding.IntegerExpression.integerExpression;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import resourcescheduler.model.gateway.CompleteMsgNotifyingGateway;
 import resourcescheduler.model.gateway.Gateway;
+import resourcescheduler.model.gateway.MessageCompletedListener;
 import resourcescheduler.model.message.Message;
 
 /**
@@ -15,17 +23,14 @@ import resourcescheduler.model.message.Message;
  */
 public class ResourceScheduler {
 
-    private final IntegerProperty idleResources;
-    private final IntegerProperty busyResources;
-    private final IntegerExpression totalRealResources;
-    private final IntegerProperty desiredResources;
-    private final IntegerExpression availableResources;
+    private final IntegerProperty idleResources, busyResources, desiredResources;
+    private final IntegerExpression totalRealResources, availableResources;
 
-    private final Queue<Message> unsentMessagesQueue;
+    private final CompleteMsgNotifyingGateway gateway;
+    private final List<Message> unsentMessagesList;
+    private final Object mutex = new Object();
 
-    private final Gateway gateway;
-
-    public ResourceScheduler(Gateway gateway) {
+    public ResourceScheduler(CompleteMsgNotifyingGateway gateway) {
         this.gateway = gateway;
 
         this.idleResources = new SimpleIntegerProperty(0);
@@ -35,7 +40,10 @@ public class ResourceScheduler {
         this.totalRealResources = integerExpression(idleResources.add(busyResources));
         this.availableResources = integerExpression(desiredResources.subtract(totalRealResources));
 
-        this.unsentMessagesQueue = new LinkedBlockingQueue<>();
+        this.unsentMessagesList = new LinkedList<>();
+
+        gateway.addOnMessageCompletedListener(new ResourceSchedulerMessageCompletedListener());
+
     }
 
     /**
@@ -44,26 +52,93 @@ public class ResourceScheduler {
      * resources quantity than the number of the current busy resources
      */
     public int getAvailableResourcesQuantity() {
-        return availableResources.intValue();
+
+        synchronized (mutex) {
+            return availableResources.intValue();
+        }
     }
 
     public int getDesiredResourcesQuantity() {
-        return this.desiredResources.intValue();
+        synchronized (mutex) {
+            return this.desiredResources.intValue();
+        }
     }
 
-    public void setDesiredResourcesQuantity(int quantity) {
-        if(quantity<0){
+    public void setDesiredResourcesQuantity(int quantity) throws IllegalArgumentException {
+        if (quantity < 0) {
             throw new IllegalArgumentException("Desired resources quantity must not be <0");
         }
-        this.desiredResources.set(quantity);
+        synchronized (mutex) {
+            this.desiredResources.set(quantity);
+            tryToSendMessages();
+        }
     }
 
     public void reveiveMessage(Message message) {
-        this.unsentMessagesQueue.offer(message);
+        synchronized (mutex) {
+            unsentMessagesList.add(message);
+        }
+        tryToSendMessages();
     }
 
     public int getQueuedMessagesCount() {
-        return this.unsentMessagesQueue.size();
+        synchronized (mutex) {
+            return this.unsentMessagesList.size();
+        }
+    }
+
+    private final AtomicBoolean tryingToSendMessage = new AtomicBoolean(false);
+
+    private void tryToSendMessages() {
+        if (tryingToSendMessage.compareAndSet(false, true)) {
+
+            boolean available = true;
+
+            while (available && !unsentMessagesList.isEmpty()) {
+
+                Message nextUnsentMsg = unsentMessagesList.get(0);
+
+                synchronized (mutex) {
+                    int avRQ = getAvailableResourcesQuantity();
+                    available = avRQ > 0;
+                    System.out.println("av   "+avRQ+" "+available);
+                    if (available) {
+                        System.out.println("!");
+                        increment(busyResources, 1);
+                        System.out.println(unsentMessagesList.size());
+                        unsentMessagesList.remove(0);
+                        System.out.println(unsentMessagesList.size());
+                        gateway.send(nextUnsentMsg);
+
+                    }
+                }
+
+            }
+            tryingToSendMessage.set(false);
+        }
+    }
+
+    private static void increment(IntegerProperty intProp, int increment) {
+        intProp.set(intProp.get() + increment);
+    }
+
+    private class ResourceSchedulerMessageCompletedListener implements MessageCompletedListener {
+
+        public ResourceSchedulerMessageCompletedListener() {
+
+        }
+
+        @Override
+        public void notifyMessageCompleted(Message msg) {
+            System.out.println("Notifycompleted");
+            synchronized (mutex) {
+                if (getAvailableResourcesQuantity() >= 0) {
+                    increment(idleResources, 1);
+                    tryToSendMessages();
+                }
+            }
+
+        }
     }
 
 }
