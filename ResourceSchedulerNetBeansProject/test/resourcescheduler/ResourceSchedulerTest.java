@@ -11,10 +11,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import resourcescheduler.model.gateway.CompleteGateway;
 import resourcescheduler.model.gateway.fakeimplementations.DummyGateway;
-import resourcescheduler.model.gateway.fakeimplementations.InstantProcessingGateway;
 import resourcescheduler.model.gateway.fakeimplementations.ManualGateway;
+import resourcescheduler.model.message.DummyMessage;
 import resourcescheduler.model.message.Message;
-import resourcescheduler.model.message.MessageFactory;
 
 /**
  *
@@ -49,17 +48,17 @@ public class ResourceSchedulerTest {
 //        System.out.println("canReceiveAndQueueMessages");
 //
 //        int queuedMessagesCount;
-//        dummyRSched.reveiveMessage(MessageFactory.createDummyMessage());
+//        dummyRSched.reveiveMessage(new DummyMessage());
 //        queuedMessagesCount = dummyRSched.getQueuedMessagesCount();
 //        assertEquals(1, queuedMessagesCount);
 //
-//        dummyRSched.reveiveMessage(MessageFactory.createDummyMessage());
+//        dummyRSched.reveiveMessage(new DummyMessage());
 //        queuedMessagesCount = dummyRSched.getQueuedMessagesCount();
 //        assertEquals(2, queuedMessagesCount);
 //
 //        final int numberOfNewDummyMessagesToSend = 8;
 //        for (int i = 0; i < numberOfNewDummyMessagesToSend; i++) {
-//            dummyRSched.reveiveMessage(MessageFactory.createDummyMessage());
+//            dummyRSched.reveiveMessage(new DummyMessage());
 //            queuedMessagesCount++;
 //            assertEquals(queuedMessagesCount, dummyRSched.getQueuedMessagesCount());
 //        }
@@ -81,7 +80,7 @@ public class ResourceSchedulerTest {
 
         for (int i = 0; i < 10; i++) {
 
-            resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+            resourceScheduler.reveiveMessage(new DummyMessage());
         }
 
         //Zero sent messages
@@ -119,14 +118,14 @@ public class ResourceSchedulerTest {
         gateway.setDesiredAvailableResources(12);
         assertEquals(10, sentMessages.get());
 
-        resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+        resourceScheduler.reveiveMessage(new DummyMessage());
         assertEquals(11, sentMessages.get());
-        resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+        resourceScheduler.reveiveMessage(new DummyMessage());
         assertEquals(12, sentMessages.get());
         assertEquals(0, resourceScheduler.getQueuedMessagesCount());
 
         //No more resources
-        resourceScheduler.reveiveMessage(MessageFactory.createDummyMessage());
+        resourceScheduler.reveiveMessage(new DummyMessage());
         assertEquals(12, sentMessages.get());
         assertEquals(1, resourceScheduler.getQueuedMessagesCount());
     }
@@ -151,7 +150,7 @@ public class ResourceSchedulerTest {
 
         final List<Message> processingMessages = new LinkedList<>();
         for (int i = 0; i < 15; i++) {
-            Message dummyMessage = MessageFactory.createDummyMessage();
+            Message dummyMessage = new DummyMessage();
             resourceScheduler.reveiveMessage(dummyMessage);
             if (i < 10) {
                 processingMessages.add(dummyMessage);
@@ -168,7 +167,7 @@ public class ResourceSchedulerTest {
         }
         assertEquals(15, sentMessages.get());
         //No efffect
-        manualGateway.processSentMessage(MessageFactory.createDummyMessage());
+        manualGateway.processSentMessage(new DummyMessage());
         assertEquals(15, sentMessages.get());
 
     }

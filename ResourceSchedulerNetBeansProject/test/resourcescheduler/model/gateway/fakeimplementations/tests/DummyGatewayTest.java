@@ -5,7 +5,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import resourcescheduler.model.message.Message;
-import resourcescheduler.model.message.MessageFactory;
+import resourcescheduler.model.message.DummyMessage;
 
 /**
  *
@@ -21,7 +21,7 @@ public class DummyGatewayTest {
         Message m = null;
 
         this.dummyGateway = new DummyGateway();
-        this.dummyMessage = MessageFactory.createDummyMessage();
+        this.dummyMessage = new DummyMessage();
     }
 
     @After

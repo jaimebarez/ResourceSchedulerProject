@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import resourcescheduler.model.message.Message;
-import resourcescheduler.model.message.MessageFactory;
+import resourcescheduler.model.message.DummyMessage;
 
 /**
  *
@@ -21,7 +21,7 @@ public class ManualGatewayTest {
     @Before
     public void setUp() {
         this.manualGateway = new ManualGateway();
-        this.dummyMessage = MessageFactory.createDummyMessage();
+        this.dummyMessage = new DummyMessage();
     }
 
     @After
@@ -45,7 +45,7 @@ public class ManualGatewayTest {
     public void testProcessSentMessage() {
         System.out.println("testProcessSentMessage");
 
-        assertFalse(manualGateway.processSentMessage(MessageFactory.createDummyMessage()));
+        assertFalse(manualGateway.processSentMessage(new DummyMessage()));
         manualGateway.send(dummyMessage);
         assertTrue(manualGateway.processSentMessage(dummyMessage));
         assertFalse(manualGateway.processSentMessage(dummyMessage));
