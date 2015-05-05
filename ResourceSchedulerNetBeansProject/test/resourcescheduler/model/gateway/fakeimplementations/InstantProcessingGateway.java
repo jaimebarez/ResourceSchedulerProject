@@ -1,19 +1,18 @@
 package resourcescheduler.model.gateway.fakeimplementations;
 
-import resourcescheduler.model.gateway.CompleteMsgNotifyingGateway;
+import resourcescheduler.model.gateway.CompleteGateway;
 import resourcescheduler.model.message.Message;
 
 /**
  *
  * @author Jaime Bárez Lobato
  */
-public class InstantProcessingGateway extends CompleteMsgNotifyingGateway {
+public class InstantProcessingGateway extends CompleteGateway {
     
     @Override
     public void send(Message msg) {
-        
-        msg.completed();
-        super.fireMessageCompleted(msg);
+        super.send(msg);
+        super.setMessageCompleted(msg);
     }
     
 }

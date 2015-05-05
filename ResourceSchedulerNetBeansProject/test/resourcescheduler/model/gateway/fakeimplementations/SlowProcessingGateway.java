@@ -4,14 +4,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import resourcescheduler.model.gateway.CompleteMsgNotifyingGateway;
+import resourcescheduler.model.gateway.CompleteGateway;
 import resourcescheduler.model.message.Message;
 
 /**
  *
  * @author Jaime Bárez Lobato
  */
-public class SlowProcessingGateway extends CompleteMsgNotifyingGateway {
+public class SlowProcessingGateway extends CompleteGateway {
 
     private final long processingMillis;
     private final ThreadFactory threadFactory;
@@ -23,7 +23,7 @@ public class SlowProcessingGateway extends CompleteMsgNotifyingGateway {
 
     @Override
     public void send(Message msg) {
-
+        super.send(msg);
         Thread newThread = threadFactory.newThread(new SlowMessageProcessorRunnable(msg));
 
         newThread.start();
@@ -46,8 +46,7 @@ public class SlowProcessingGateway extends CompleteMsgNotifyingGateway {
                 Logger.getLogger(SlowProcessingGateway.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-            msg.completed();
-            SlowProcessingGateway.super.fireMessageCompleted(msg);
+            SlowProcessingGateway.super.setMessageCompleted(msg);
         }
     }
 }
