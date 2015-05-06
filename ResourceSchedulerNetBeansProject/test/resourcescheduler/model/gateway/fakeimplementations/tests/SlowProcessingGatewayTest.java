@@ -14,7 +14,7 @@ import resourcescheduler.model.message.Message;
  */
 public class SlowProcessingGatewayTest {
 
-    private static final long msToProcessMessage = 1000;
+    private static final long msToProcessMessage = 2000;
 
     @Test
     public void testSend() throws InterruptedException {

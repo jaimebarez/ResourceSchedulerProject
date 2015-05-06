@@ -15,7 +15,6 @@ public class DifferentSpeedsProcessingGateway extends CompleteGateway {
 
     private long processingMillis = 0;
     private ThreadFactory threadFactory;
-    private Integer newThreadsPriority;
 
     public DifferentSpeedsProcessingGateway() {
         threadFactory = Executors.defaultThreadFactory();

@@ -238,8 +238,7 @@ public class ResourceSchedulerTest {
     public void testCheckMessageGroupsNotInterleavedWhenPossible() throws InterruptedException {
         final Thread currentThread = Thread.currentThread();
         final List<Long> sentGroupsOrder = new ArrayList<>();
-        final List<Long> groups = Arrays.asList(1L, 2L, 1L, 2L, 1L, 2L, 4L,
-                6L, 1L, 2L, 1L, 2L, 1L, 2L, 1L, 2L, 1L, 3L, 4L);
+        final List<Long> groups = new ArrayList<>(Arrays.asList(2L, 4L, 1L, 1L, 2L, 4L));
         //Size= 15
         final AtomicInteger counter = new AtomicInteger(1);
         CompleteGateway gw = new InstantProcessingGateway();
@@ -263,16 +262,26 @@ public class ResourceSchedulerTest {
 
         };
         gw.setDesiredAvailableResources(0);
-        List<Message> msgs = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            GroupingMessage groupingMessage = new GroupingMessage(groups.get(i));
+        for (Long group : groups) {
+            GroupingMessage groupingMessage = new GroupingMessage(group);
+            
             rSch.receiveMessage(groupingMessage);
         }
         gw.setDesiredAvailableResources(1);
         
         System.out.println(Arrays.asList(sentGroupsOrder.toArray()));
-        assertArrayEquals(new Object[]{1L, 1L, 1L, 2L, 2L}, sentGroupsOrder.toArray());
-
+        assertArrayEquals(new Object[]{2L, 2L, 4L, 4L, 1L,1L}, sentGroupsOrder.toArray());
+        
+        gw.setDesiredAvailableResources(0);
+        groups.clear();
+        sentGroupsOrder.clear();
+        groups.addAll(Arrays.asList(new Long[]{1L,4L,5L,4L,6L,5L}));
+        
+        for (Long group : groups) {
+            rSch.receiveMessage(new GroupingMessage(group));
+        }
+        gw.setDesiredAvailableResources(1);
+        assertArrayEquals(new Object[]{4L, 4L, 1L, 5L, 5L,6L}, sentGroupsOrder.toArray());
 //        int maximimCheckingTimes = 3;
 //        boolean checkAgain = true;
 //        for (int i = 1; checkAgain && i <= maximimCheckingTimes; i++) {

@@ -1,12 +1,9 @@
 package resourcescheduler;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import resourcescheduler.model.gateway.AvailableResourcesListener;
 import resourcescheduler.model.gateway.CompleteGateway;
@@ -36,14 +33,14 @@ public class ResourceScheduler {
     }
 
     public void reveiveMessage(Message msg) {
-        receiveMessage(msg, Long.MIN_VALUE);
+        internalReceiveMessage(msg, Long.MIN_VALUE);
     }
 
     public void receiveMessage(GroupingMessage msg) {
-        receiveMessage(msg, msg.getGroupId());
+        internalReceiveMessage(msg, msg.getGroupId());
     }
 
-    private void receiveMessage(Message msg, long groupId) {
+    protected void internalReceiveMessage(Message msg, long groupId) {
         synchronized (mutex) {
             messageGroupsManager.register(msg, groupId);
             unsentMessagesQueue.add(msg);
