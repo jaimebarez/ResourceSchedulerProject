@@ -38,14 +38,14 @@ public class GroupTerminationAbleResourceSchedulerTest {
             rSched.receiveMessage(new TerminationMessageImpl(1));
             fail("Did not raise an error");
         } catch (PreviousTermMsgReceivedException ex) {
-
+            //Exception OK
         }
         rSched.receiveMessage(new TerminationMessageImpl(2));
         try {
             rSched.receiveMessage(new DummyMessage(2));
             fail("Did not raise an error");
         } catch (PreviousTermMsgReceivedException ex) {
-
+            //Exception OK
         }
     }
 
