@@ -4,7 +4,7 @@ import resourcescheduler.model.message.Message;
 
 /**
  *
- * @author Jaime Bárez Lobato
+ * @author Jaime Bárez Lobato - jaimebarez@gmail.com
  */
 public interface Gateway {
 

@@ -1,7 +1,7 @@
 package resourcescheduler.model.gateway.fakeimplementations;
 
 import java.util.concurrent.ThreadFactory;
-import resourcescheduler.model.gateway.CompleteGateway;
+import resourcescheduler.model.gateway.NotifyingGatewayImpl;
 import resourcescheduler.model.message.Message;
 
 /**
@@ -9,7 +9,7 @@ import resourcescheduler.model.message.Message;
  *
  * @author Jaime Bárez Lobato
  */
-public class SlowProcessingGateway extends CompleteGateway {
+public class SlowProcessingGateway extends NotifyingGatewayImpl {
     
     private final DifferentSpeedsProcessingGateway differentSpeedsProcessingGateway;
     

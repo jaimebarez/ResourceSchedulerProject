@@ -4,14 +4,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import resourcescheduler.model.gateway.CompleteGateway;
+import resourcescheduler.model.gateway.NotifyingGatewayImpl;
 import resourcescheduler.model.message.Message;
 
 /**
  *
  * @author Jaime Bárez Lobato
  */
-public class DifferentSpeedsProcessingGateway extends CompleteGateway {
+public class DifferentSpeedsProcessingGateway extends NotifyingGatewayImpl {
 
     private long processingMillis = 0;
     private ThreadFactory threadFactory;

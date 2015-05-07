@@ -51,7 +51,7 @@ public class ManualGatewayTest {
         assertFalse(manualGateway.processSentMessage(dummyMessage));
 
         final AtomicBoolean reallyProcessed = new AtomicBoolean(false);
-        Message msg = new Message() {
+        Message msg = new DummyMessage() {
 
             @Override
             public void completed() {

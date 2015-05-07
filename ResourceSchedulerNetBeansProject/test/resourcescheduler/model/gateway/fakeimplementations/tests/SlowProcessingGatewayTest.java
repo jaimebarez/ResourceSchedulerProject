@@ -6,6 +6,7 @@ import resourcescheduler.model.gateway.fakeimplementations.SlowProcessingGateway
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import resourcescheduler.model.message.DummyMessage;
 import resourcescheduler.model.message.Message;
 
 /**
@@ -49,7 +50,7 @@ public class SlowProcessingGatewayTest {
                 }
             });
 
-            slowProcessingGateway.send(new Message() {
+            slowProcessingGateway.send(new DummyMessage() {
 
                 @Override
                 public void completed() {

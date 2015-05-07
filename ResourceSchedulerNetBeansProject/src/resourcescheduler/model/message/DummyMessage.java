@@ -1,14 +1,23 @@
-
 package resourcescheduler.model.message;
 
 /**
  *
- * @author jaime.barez.lobato
+ * @author Jaime Bárez Lobato - jaimebarez@gmail.com
  */
-public class DummyMessage implements Message {
+public class DummyMessage extends Message {
+
+    private static final long dummyId = -1l;
+
+    public DummyMessage(long groupId) {
+        super(groupId);
+    }
+
+    public DummyMessage() {
+        super(dummyId);
+    }
 
     @Override
     public void completed() {
-        System.out.println("MSG Completed");
+        //Do nothing
     }
 }

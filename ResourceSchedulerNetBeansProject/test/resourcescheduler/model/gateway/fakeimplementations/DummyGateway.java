@@ -1,6 +1,6 @@
 package resourcescheduler.model.gateway.fakeimplementations;
 
-import resourcescheduler.model.gateway.CompleteGateway;
+import resourcescheduler.model.gateway.NotifyingGatewayImpl;
 import resourcescheduler.model.gateway.Gateway;
 import resourcescheduler.model.message.Message;
 
@@ -8,7 +8,7 @@ import resourcescheduler.model.message.Message;
  *
  * @author Jaime Bárez Lobato
  */
-public class DummyGateway extends CompleteGateway {
+public class DummyGateway extends NotifyingGatewayImpl {
 
     @Override
     public void send(Message msg) {

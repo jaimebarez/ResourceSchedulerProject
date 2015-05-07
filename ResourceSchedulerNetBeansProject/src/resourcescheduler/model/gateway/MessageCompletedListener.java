@@ -4,7 +4,7 @@ import resourcescheduler.model.message.Message;
 
 /**
  *
- * @author jaime.barez.lobato
+ * @author Jaime Bárez Lobato - jaimebarez@gmail.com
  */
 public interface MessageCompletedListener {
 

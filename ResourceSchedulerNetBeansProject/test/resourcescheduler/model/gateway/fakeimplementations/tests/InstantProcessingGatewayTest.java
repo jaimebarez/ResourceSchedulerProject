@@ -6,6 +6,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import resourcescheduler.model.message.DummyMessage;
 import resourcescheduler.model.message.Message;
 
 /**
@@ -30,7 +31,7 @@ public class InstantProcessingGatewayTest {
         System.out.println("testSend");
 
         final AtomicBoolean reallyProcessed = new AtomicBoolean(false);
-        Message msg = new Message() {
+        Message msg = new DummyMessage() {
 
             @Override
             public void completed() {

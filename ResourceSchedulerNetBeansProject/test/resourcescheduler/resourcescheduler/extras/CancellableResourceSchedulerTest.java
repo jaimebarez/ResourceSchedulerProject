@@ -1,9 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package resourcescheduler;
+package resourcescheduler.resourcescheduler.extras;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -16,8 +11,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import resourcescheduler.model.gateway.fakeimplementations.InstantProcessingGateway;
-import resourcescheduler.model.message.GroupingMessage;
+import resourcescheduler.model.message.DummyMessage;
 import resourcescheduler.model.message.Message;
+import resourcescheduler.resourcescheduler.ResourceScheduler;
 
 /**
  *
@@ -25,46 +21,27 @@ import resourcescheduler.model.message.Message;
  */
 public class CancellableResourceSchedulerTest {
 
-    public CancellableResourceSchedulerTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     @Test
-    public void testCanCancelAGroupOfMessages() {
+    public void testCanCancelAGroupOfMessages() throws MessageReceivementException {
+        
         final Set<Long> receivedGroups = new HashSet<>();
         InstantProcessingGateway gateway = new InstantProcessingGateway() {
 
             @Override
             public void send(Message msg) {
                 super.send(msg);
-                if (msg instanceof GroupingMessage) {
-                    receivedGroups.add(((GroupingMessage) msg).getGroupId());
+                if (msg instanceof Message) {
+                    receivedGroups.add(((Message) msg).getGroupId());
                 }
             }
-
         };
-        CancellableResourceScheduler cRsched = new CancellableResourceScheduler(gateway);
+        ResourceScheduler cRsched = new ResourceScheduler(gateway);
         gateway.setDesiredAvailableResources(1);
 
         final List<Long> groupsToSend = Arrays.asList(1L, 2L, 3L, 4L, 5L);
 
         for (Long group : groupsToSend) {
-            cRsched.receiveMessage(new GroupingMessage(group));
+            cRsched.receiveMessage(new DummyMessage(group));
         }
         assertTrue(receivedGroups.containsAll(groupsToSend));
 
@@ -72,24 +49,24 @@ public class CancellableResourceSchedulerTest {
         cRsched.addCancellableGroup(4);
 
         for (Long group : groupsToSend) {
-            cRsched.receiveMessage(new GroupingMessage(group));
+            cRsched.receiveMessage(new DummyMessage(group));
         }
         assertFalse(receivedGroups.containsAll(groupsToSend));
         assertFalse(receivedGroups.contains(4L));
-        
-        //Nothing happens
+
+        //Cancelable group that does not exist. Nothing bad happens
         receivedGroups.clear();
         cRsched.addCancellableGroup(99);
         for (Long group : groupsToSend) {
-            cRsched.receiveMessage(new GroupingMessage(group));
+            cRsched.receiveMessage(new DummyMessage(group));
         }
         assertFalse(receivedGroups.containsAll(groupsToSend));
-        assertFalse(receivedGroups.contains(4L));
-        
+        assertFalse(receivedGroups.contains(4L));//Was previously canceled
+
         receivedGroups.clear();
         cRsched.addCancellableGroup(3);
         for (Long group : groupsToSend) {
-            cRsched.receiveMessage(new GroupingMessage(group));
+            cRsched.receiveMessage(new DummyMessage(group));
         }
         assertFalse(receivedGroups.containsAll(groupsToSend));
         assertFalse(receivedGroups.contains(4L));

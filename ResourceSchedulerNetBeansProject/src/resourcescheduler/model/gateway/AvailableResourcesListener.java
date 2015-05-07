@@ -2,7 +2,7 @@ package resourcescheduler.model.gateway;
 
 /**
  *
- * @author jaime.barez.lobato
+ * @author Jaime Bárez Lobato - jaimebarez@gmail.com
  */
 public interface AvailableResourcesListener {
 
