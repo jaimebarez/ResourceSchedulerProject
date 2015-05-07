@@ -1,6 +1,5 @@
-package resourcescheduler.model.gateway.fakeimplementations.tests;
+package resourcescheduler.model.gateway.fakeimplementations;
 
-import resourcescheduler.model.gateway.fakeimplementations.InstantProcessingGateway;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Before;
@@ -31,19 +30,24 @@ public class InstantProcessingGatewayTest {
         System.out.println("testSend");
 
         final AtomicBoolean reallyProcessed = new AtomicBoolean(false);
+        final Object lock = new Object();
         Message msg = new DummyMessage() {
 
             @Override
             public void completed() {
-                reallyProcessed.set(true);
+                synchronized (lock) {//LOCK
+                    reallyProcessed.set(true);
+                }
             }
         };
 
         assertFalse(reallyProcessed.get());
 
-        instantProcessingGateway.send(msg);
+        synchronized (lock) {//LOCK
+            instantProcessingGateway.send(msg);
 
-        assertTrue(reallyProcessed.get());
+            assertTrue(reallyProcessed.get());
+        }
+        /*Thaks to the lock we can ensure that it is instant, no threads*/
     }
-
 }

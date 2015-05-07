@@ -8,8 +8,9 @@ import resourcescheduler.model.gateway.NotifyingGatewayImpl;
 import resourcescheduler.model.message.Message;
 
 /**
+ * Gateway whith fake resources that take different time delays
  *
- * @author Jaime Bárez Lobato
+ * @author Jaime Bárez Lobato - jaimebarez@gmail.com
  */
 public class DifferentSpeedsProcessingGateway extends NotifyingGatewayImpl {
 
@@ -27,10 +28,6 @@ public class DifferentSpeedsProcessingGateway extends NotifyingGatewayImpl {
         newThread.start();
     }
 
-    /**
-     * Null means default
-     * @param threadFactory
-     */
     public void setInternalThreadFactory(ThreadFactory threadFactory) {
 
         this.threadFactory = threadFactory;

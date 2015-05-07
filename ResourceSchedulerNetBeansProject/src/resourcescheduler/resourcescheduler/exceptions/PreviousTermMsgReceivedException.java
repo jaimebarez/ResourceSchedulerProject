@@ -1,4 +1,4 @@
-package resourcescheduler.resourcescheduler.extras;
+package resourcescheduler.resourcescheduler.exceptions;
 
 /**
  *

@@ -5,6 +5,7 @@ import java.util.List;
 import resourcescheduler.model.message.Message;
 
 /**
+ * Gateway implementation that notifies relevat events
  *
  * @author Jaime Bárez Lobato - jaimebarez@gmail.com
  */

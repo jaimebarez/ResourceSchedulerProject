@@ -1,7 +1,6 @@
 package resourcescheduler.model.gateway;
 
 import org.junit.After;
-import org.junit.Assert.*;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +27,7 @@ public class GatewayTest {
     @Test
     public void testSend() {
         System.out.println("testSend");
+
         assertNotNull(gatewayImpl);
         Message msg = new DummyMessage();
 
@@ -37,6 +37,7 @@ public class GatewayTest {
 
     public class GatewayImpl implements Gateway {
 
+        @Override
         public void send(Message msg) {
         }
     }

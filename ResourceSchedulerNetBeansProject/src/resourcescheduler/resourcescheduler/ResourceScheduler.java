@@ -2,7 +2,7 @@ package resourcescheduler.resourcescheduler;
 
 import java.util.Collection;
 import java.util.HashSet;
-import resourcescheduler.resourcescheduler.extras.MessageReceivementException;
+import resourcescheduler.resourcescheduler.exceptions.MessageReceivementException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -11,7 +11,7 @@ import resourcescheduler.model.gateway.NotifyingGatewayImpl;
 import resourcescheduler.model.gateway.MessageCompletedListener;
 import resourcescheduler.model.message.Message;
 import resourcescheduler.model.message.TerminationMessage;
-import resourcescheduler.resourcescheduler.extras.PreviousTermMsgReceivedException;
+import resourcescheduler.resourcescheduler.exceptions.PreviousTermMsgReceivedException;
 
 /**
  *
@@ -20,7 +20,7 @@ import resourcescheduler.resourcescheduler.extras.PreviousTermMsgReceivedExcepti
 public class ResourceScheduler {
 
     private final NotifyingGatewayImpl gateway;
-    private final Object mutex = new Object();
+    private final Object mutex;
     private final Set<Long> receivedTerminationGroups;
     private final Collection<Long> cancelledGroups;
     private MessagePriorisator messagePriorisator;
@@ -28,8 +28,10 @@ public class ResourceScheduler {
 
     public ResourceScheduler(NotifyingGatewayImpl gateway) {
         this.gateway = gateway;
+        mutex = new Object();
         receivedTerminationGroups = new HashSet<>();
         cancelledGroups = new HashSet<>();
+
         setMessagePriorisator(new MessageFirstGroupsPriorisator());
 
         gateway.addOnMessageCompletedListener(new OnMsgCompleteTryToSendLeftMessages());

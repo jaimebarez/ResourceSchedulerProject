@@ -6,6 +6,7 @@ import java.util.Map;
 import resourcescheduler.model.message.Message;
 
 /**
+ * Priorizes messages that came first
  *
  * @author Jaime Bárez Lobato - jaimebarez@gmail.com
  */

@@ -1,6 +1,5 @@
-package resourcescheduler.model.gateway.fakeimplementations.tests;
+package resourcescheduler.model.gateway.fakeimplementations;
 
-import resourcescheduler.model.gateway.fakeimplementations.ManualGateway;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Before;
@@ -38,9 +37,6 @@ public class ManualGatewayTest {
 
     }
 
-    /**
-     * Test of processSentMessage method, of class ManualGateway.
-     */
     @Test
     public void testProcessSentMessage() {
         System.out.println("testProcessSentMessage");

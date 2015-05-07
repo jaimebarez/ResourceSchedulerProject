@@ -1,14 +1,11 @@
 package resourcescheduler.resourcescheduler.extras;
 
+import resourcescheduler.resourcescheduler.exceptions.MessageReceivementException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import resourcescheduler.model.gateway.NotifyingGatewayImpl;
@@ -24,12 +21,9 @@ import resourcescheduler.resourcescheduler.ResourceScheduler;
  */
 public class AlternatMsgPriorResourceSchedulerTest {
 
-    /**
-     * Test of setMessagePriorisator method, of class
-     * AlternatMsgPriorResourceScheduler.
-     */
     @Test
     public void testAlternativeMessagePriorisationAndEasyOriginalAlgorithmRecover() throws MessageReceivementException {
+        System.out.println("testAlternativeMessagePriorisationAndEasyOriginalAlgorithmRecover");
 
         final List<Long> receivedIds = new ArrayList<>();
 
@@ -67,8 +61,8 @@ public class AlternatMsgPriorResourceSchedulerTest {
         rSched.setMessagePriorisator(originalMessagePriorisator);
         receivedIds.clear();
         gw.setDesiredAvailableResources(0);
-        
-        final Long[] groupEnterOrder =new Long[]{5L, 5L, 3L, 1L, Long.MIN_VALUE, 0L, 9L, Long.MAX_VALUE, 14L};
+
+        final Long[] groupEnterOrder = new Long[]{5L, 5L, 3L, 1L, Long.MIN_VALUE, 0L, 9L, Long.MAX_VALUE, 14L};
         for (Long id : ids) {
             rSched.receiveMessage(new DummyMessage(id));
         }
@@ -97,7 +91,6 @@ public class AlternatMsgPriorResourceSchedulerTest {
                 }
             };
         }
-
     }
 
 }

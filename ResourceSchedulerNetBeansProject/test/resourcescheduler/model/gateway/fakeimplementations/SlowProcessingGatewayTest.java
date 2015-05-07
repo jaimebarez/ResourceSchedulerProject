@@ -1,13 +1,11 @@
-package resourcescheduler.model.gateway.fakeimplementations.tests;
+package resourcescheduler.model.gateway.fakeimplementations;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import resourcescheduler.model.gateway.fakeimplementations.SlowProcessingGateway;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import resourcescheduler.model.message.DummyMessage;
-import resourcescheduler.model.message.Message;
 
 /**
  *
@@ -68,7 +66,7 @@ public class SlowProcessingGatewayTest {
                 /*(#1) We want fast threads to pass the test.Not exact time, depends on JVM and OS states*/
                 testThread.wait((int) (msToProcessMessage * 1.5f));
                 final float millisTook = millisAfterSending.get() - milliBeforeSending.get();
-                System.out.println("millisTook = " + millisTook);
+                //System.out.println("millisTook = " + millisTook);
                 boolean itWasFast = (millisTook < msToProcessMessage);
                 assertEquals(itWasFast, fast);//In one case it must be fast
             }

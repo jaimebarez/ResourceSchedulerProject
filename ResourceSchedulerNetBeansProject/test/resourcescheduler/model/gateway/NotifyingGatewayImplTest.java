@@ -62,5 +62,4 @@ public class NotifyingGatewayImplTest {
         public void send(Message msg) {
         }
     }
-
 }

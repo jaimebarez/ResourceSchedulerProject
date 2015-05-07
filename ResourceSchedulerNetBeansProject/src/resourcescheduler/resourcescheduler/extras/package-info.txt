@@ -1,2 +1,0 @@
-This package, in a production environment, should not be called "extras",
-but I called it this way because it's part of the extra credits exercises.

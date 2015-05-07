@@ -1,13 +1,10 @@
 package resourcescheduler.resourcescheduler.extras;
 
+import resourcescheduler.resourcescheduler.exceptions.MessageReceivementException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import resourcescheduler.model.gateway.fakeimplementations.InstantProcessingGateway;
@@ -17,13 +14,14 @@ import resourcescheduler.resourcescheduler.ResourceScheduler;
 
 /**
  *
- * @author jaime.barez.lobato
+ * @author Jaime Bárez Lobato - jaimebarez@gmail.com
  */
 public class CancellableResourceSchedulerTest {
 
     @Test
     public void testCanCancelAGroupOfMessages() throws MessageReceivementException {
-        
+        System.out.println("testCanCancelAGroupOfMessages");
+
         final Set<Long> receivedGroups = new HashSet<>();
         InstantProcessingGateway gateway = new InstantProcessingGateway() {
 
@@ -72,5 +70,4 @@ public class CancellableResourceSchedulerTest {
         assertFalse(receivedGroups.contains(4L));
         assertFalse(receivedGroups.contains(3L));
     }
-
 }
